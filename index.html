@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON GUI Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="url"], input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .rail-content-item {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .rail-content-item button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>JSON GUI Editor</h1>
+
+    <div class="section">
+        <label for="showPromoRail">Show Promo Rail:</label>
+        <select id="showPromoRail">
+            <option value="true">True</option>
+            <option value="false">False</option>
+        </select>
+    </div>
+
+    <div class="section">
+        <label for="railTitle">Rail Title:</label>
+        <input type="text" id="railTitle">
+    </div>
+
+    <div class="section">
+        <label for="showTitle">Show Title:</label>
+        <select id="showTitle">
+            <option value="true">True</option>
+            <option value="false">False</option>
+        </select>
+    </div>
+
+    <div class="section">
+        <h2>Rail Content</h2>
+        <div id="railContent"></div>
+        <button id="addNewItem">Add New Item</button>
+    </div>
+
+    <div class="section">
+        <button id="generateJson">Generate JSON</button>
+        <pre id="outputJson"></pre>
+    </div>
+
+    <script>
+        // Initial JSON structure
+        const initialData = {
+            "promotions": {
+                "showPromoRail": true,
+                "railTitle": "title",
+                "showTitle": true,
+                "railContent": [
+                    {
+                        "displayTitle": "Item 1",
+                        "destinationUrl": "https://www.google.com/",
+                        "imageUrl": "https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png",
+                        "displayOrder": 1
+                    },
+                    {
+                        "displayTitle": "Item 2",
+                        "destinationUrl": "https://www.google.com/",
+                        "imageUrl": "https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png",
+                        "displayOrder": 2
+                    }
+                ]
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initialize form with JSON data
+            document.getElementById('showPromoRail').value = initialData.promotions.showPromoRail.toString();
+            document.getElementById('railTitle').value = initialData.promotions.railTitle;
+            document.getElementById('showTitle').value = initialData.promotions.showTitle.toString();
+
+            const railContentContainer = document.getElementById('railContent');
+
+            function renderRailContentItems() {
+                railContentContainer.innerHTML = ''; // Clear the container
+                initialData.promotions.railContent.forEach((item, index) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'rail-content-item';
+
+                    itemDiv.innerHTML = `
+                        <label>Display Title:</label>
+                        <input type="text" value="${item.displayTitle}" data-index="${index}" class="displayTitle">
+                        
+                        <label>Destination URL:</label>
+                        <input type="url" value="${item.destinationUrl}" data-index="${index}" class="destinationUrl">
+                        
+                        <label>Image URL:</label>
+                        <input type="url" value="${item.imageUrl}" data-index="${index}" class="imageUrl">
+                        
+                        <label>Display Order:</label>
+                        <input type="number" value="${item.displayOrder}" data-index="${index}" class="displayOrder">
+                        
+                        <button class="removeItem" data-index="${index}">Remove Item</button>
+                    `;
+
+                    railContentContainer.appendChild(itemDiv);
+                });
+            }
+
+            renderRailContentItems();
+
+            // Add a new rail content item
+            document.getElementById('addNewItem').addEventListener('click', function () {
+                initialData.promotions.railContent.push({
+                    "displayTitle": "New Item",
+                    "destinationUrl": "",
+                    "imageUrl": "",
+                    "displayOrder": initialData.promotions.railContent.length + 1
+                });
+                renderRailContentItems();
+            });
+
+            // Update JSON data when input changes
+            railContentContainer.addEventListener('input', function (e) {
+                const index = e.target.getAttribute('data-index');
+                if (e.target.classList.contains('displayTitle')) {
+                    initialData.promotions.railContent[index].displayTitle = e.target.value;
+                } else if (e.target.classList.contains('destinationUrl')) {
+                    initialData.promotions.railContent[index].destinationUrl = e.target.value;
+                } else if (e.target.classList.contains('imageUrl')) {
+                    initialData.promotions.railContent[index].imageUrl = e.target.value;
+                } else if (e.target.classList.contains('displayOrder')) {
+                    initialData.promotions.railContent[index].displayOrder = parseInt(e.target.value, 10);
+                }
+            });
+
+            // Remove rail content item
+            railContentContainer.addEventListener('click', function (e) {
+                if (e.target.classList.contains('removeItem')) {
+                    const index = e.target.getAttribute('data-index');
+                    initialData.promotions.railContent.splice(index, 1);
+                    renderRailContentItems();
+                }
+            });
+
+            // Generate JSON
+            document.getElementById('generateJson').addEventListener('click', function () {
+                initialData.promotions.showPromoRail = document.getElementById('showPromoRail').value === "true";
+                initialData.promotions.railTitle = document.getElementById('railTitle').value;
+                initialData.promotions.showTitle = document.getElementById('showTitle').value === "true";
+
+                document.getElementById('outputJson').textContent = JSON.stringify(initialData, null, 4);
+            });
+        });
+    </script>
+</body>
+
+</html>
